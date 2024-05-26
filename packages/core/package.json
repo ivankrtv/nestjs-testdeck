@@ -1,12 +1,11 @@
 {
-  "name": "@nestjs-testdeck/core",
-  "version": "0.3.3",
-  "description": "Fork of @testdeck with beforeAll and afterAll as instance's methods",
+  "name": "@object-oriented-tests/core",
+  "version": "1.0.0",
+  "description": "Fork of testdeck with beforeAll and afterAll as instance's methods",
   "keywords": [
     "test",
     "testing",
     "typescript",
-    "nest",
     "bdd",
     "tdd",
     "object oriented",
@@ -15,15 +14,14 @@
   "author": "ivankrtv",
   "contributors": [
     {
-      "name": "silkentrance",
-      "url": "https://github.com/silkentrance"
+      "name": "ivankrtv",
+      "url": "https://github.com/ivankrtv"
     }
   ],
-  "homepage": "https://testdeck.org/",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/testdeck/testdeck.git"
+    "url": "https://github.com/ivankrtv/nestjs-testdeck.git"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
