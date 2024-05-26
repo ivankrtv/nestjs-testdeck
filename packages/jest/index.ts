@@ -1,4 +1,4 @@
-import * as core from "@nestjs-testdeck/core";
+import * as core from "object-oriented-tests-core";
 
 const jestRunner: core.TestRunner = {
   suite(name: string, callback: () => void, settings?: core.SuiteSettings): void {

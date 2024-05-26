@@ -1,6 +1,6 @@
 {
-  "name": "@ivankrtv/object-oriented-tests-jest",
-  "version": "0.4.0",
+  "name": "object-oriented-tests-jest",
+  "version": "0.4.3",
   "description": "Fork of @testdeck/jest with beforeAll and afterAll as instance's methods",
   "keywords": [
     "test",
@@ -40,7 +40,7 @@
     "lint-fix": "eslint --fix ."
   },
   "dependencies": {
-    "@ivankrtv/object-oriented-tests-core": "^0.4.0"
+    "object-oriented-tests-core": "^0.4.2"
   },
   "devDependencies": {
     "@types/chai": "latest",

@@ -1,6 +1,6 @@
 {
-  "name": "@ivankrtv/object-oriented-tests-core",
-  "version": "0.4.0",
+  "name": "object-oriented-tests-core",
+  "version": "0.4.2",
   "description": "Fork of @testdeck/core with beforeAll and afterAll as instance's methods",
   "keywords": [
     "test",

@@ -1,22 +1,17 @@
-[![Get it on NPM](https://img.shields.io/npm/v/@testdeck/jest.svg)](https://www.npmjs.com/package/@testdeck/jest)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Build Status](https://github.com/testdeck/testdeck/actions/workflows/ci.yml/badge.svg)](https://github.com/testdeck/testdeck/actions/workflows/ci.yml)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=testdeck_jest&metric=coverage)](https://sonarcloud.io/summary/new_code?id=testdeck_jest)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=testdeck_jest&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=testdeck_jest)
-[![Issues](https://img.shields.io/github/issues/testdeck/testdeck/@testdeck/jest)](https://github.com/testdeck/testdeck/issues)
-[![Pull Requests](https://img.shields.io/github/issues-pr/testdeck/testdeck/@testdeck/jest)](https://github.com/testdeck/testdeck/pulls)
+# object-oriented-tests-jest
 
-# ![Testdeck](https://raw.githubusercontent.com/testdeck/testdeck/main/docs/assets/testdeck-wide.svg)
+**This package is a fork of the [@testdeck/jest](https://www.npmjs.com/package/@testdeck/jest)**
 
-## @testdeck/jest
+In this fork methods `beforeAll` and `afterAll` are instance of test class unlike the original package where they 
+were static. This is made for easier and more convenient work with NestJS
 
 The package provides a suite of decorators to integrate your favorite test framework into an object-oriented workflow.
 
 ## Object-Oriented API Usage
-With Testdeck, writing object-oriented test suites is just a blaze.
+With object-oriented-tests-jest, writing object-oriented test suites is just a blaze.
 
-``` TypeScript
-import { suite, test } from "@testdeck/jest";
+```ts
+import { suite, test } from "object-oriented-tests-jest";
 
 class TestBase {
   @test
@@ -36,10 +31,45 @@ class Hello extends TestBase {
 }
 ```
 
-## Standard Functional API Usage
-With Testdeck, you can always use the standard functional test framework API:
+## Benefits of the Object Oriented Style to work with NestJS
 
-``` TypeScript
+This fork was be created for next benefits:
+
+We can once write a `BaseTestClass` like this:
+```ts
+class BaseTestClass {
+  app: INestApplication;
+
+  async beforeAll(): Promise<void> {
+    const testModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    this.app = testModule.createNestApplication();
+    await this.app.init();
+  }
+
+  async afterAll(): Promise<void> {
+    await this.app.close();
+  }
+}
+```
+
+and then when we want create new test suite whe just write:
+```ts
+class Test extends BaseTestClass {
+  async test(): Promise<void> {
+    const result = await this.app.get(SomeService).someMethod();
+    
+    expect(result).toBeTruthy();
+  }
+}
+```
+
+## Standard Functional API Usage
+With object-oriented-tests-jest, you can always use the standard functional test framework API:
+
+```TypeScript
 function basic() {
   it('basic', () => {
     // expected fail :/
@@ -57,12 +87,6 @@ describe('Hello', () => {
 ```
 
 And you can migrate your existing functional test suites to object-oriented over time.
-
-## Further Reading
-
-- [Documentation](https://testdeck.org)
-- [CHANGELOG](https://github.com/testdeck/testdeck/blob/main/CHANGELOG.md)
-- [LICENSE](https://github.com/testdeck/testdeck/blob/main/LICENSE)
 
 ## License
 

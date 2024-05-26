@@ -1,22 +1,15 @@
-[![Get it on NPM](https://img.shields.io/npm/v/@testdeck/core.svg)](https://www.npmjs.com/package/@testdeck/core)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Build Status](https://github.com/testdeck/testdeck/actions/workflows/ci.yml/badge.svg)](https://github.com/testdeck/testdeck/actions/workflows/ci.yml)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=testdeck_core&metric=coverage)](https://sonarcloud.io/summary/new_code?id=testdeck_core)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=testdeck_core&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=testdeck_core)
-[![Issues](https://img.shields.io/github/issues/testdeck/testdeck/@testdeck/core)](https://github.com/testdeck/testdeck/issues)
-[![Pull Requests](https://img.shields.io/github/issues-pr/testdeck/testdeck/@testdeck/core)](https://github.com/testdeck/testdeck/pulls)
+# object-oriented-tests-core
 
-# ![Testdeck](https://raw.githubusercontent.com/testdeck/testdeck/main/docs/assets/testdeck-wide.svg)
+**This package is a fork of the [@testdeck/core](https://www.npmjs.com/package/@testdeck/core)**
 
-## @testdeck/core
+In this fork methods `beforeAll` and `afterAll` are instance of test class unlike the original package where they
+were static. This is made for easier and more convenient work with NestJS
 
 The package is for the integration of both test frameworks and IOC containers.
 
 ## Further Reading
 
-- [Documentation](https://testdeck.org)
-- [CHANGELOG](https://github.com/testdeck/testdeck/blob/main/CHANGELOG.md)
-- [LICENSE](https://github.com/testdeck/testdeck/blob/main/LICENSE)
+- [object-oriented-tests-jest](https://www.npmjs.com/package/object-oriented-tests-jest) Package for Jest framework
 
 ## License
 
