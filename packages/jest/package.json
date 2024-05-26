@@ -1,5 +1,5 @@
 {
-  "name": "@testdeck/jest",
+  "name": "@nestjs-testdeck/jest",
   "version": "0.3.3",
   "description": "Object oriented testing for the Jest test framework",
   "keywords": [

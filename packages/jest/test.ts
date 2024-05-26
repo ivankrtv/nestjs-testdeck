@@ -6,11 +6,11 @@ describe("tests", function() {
     let events: string[];
 
     @suite class Suite {
-        public static before() {
+        public beforeAll() {
             events.push("Suite static before");
         }
 
-        public before() {
+        public beforeEach() {
             events.push("Suite before");
         }
 
@@ -27,22 +27,22 @@ describe("tests", function() {
             events.push("Suite skippedTest");
         }
 
-        public after() {
+        public afterEach() {
             events.push("Suite after");
         }
 
-        public static after() {
+        public afterAll() {
             events.push("Suite static after");
         }
     }
 
     @suite class CallbacksSuite {
-        public static before(done) {
+        public beforeAll(done) {
             events.push("CallbacksSuite static before");
             setTimeout(done, 50);
         }
 
-        public before(done) {
+        public beforeEach(done) {
             events.push("CallbacksSuite before");
             setTimeout(done, 50);
         }
@@ -79,12 +79,12 @@ describe("tests", function() {
             setTimeout(done, 50);
         }
 
-        public after(done) {
+        public afterEach(done) {
             events.push("CallbacksSuite after");
             setTimeout(done, 50);
         }
 
-        public static after(done) {
+        public afterAll(done) {
             events.push("CallbacksSuite static after");
             setTimeout(done, 50);
         }

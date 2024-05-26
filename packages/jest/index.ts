@@ -1,4 +1,4 @@
-import * as core from "@testdeck/core";
+import * as core from "@nestjs-testdeck/core";
 
 const jestRunner: core.TestRunner = {
   suite(name: string, callback: () => void, settings?: core.SuiteSettings): void {

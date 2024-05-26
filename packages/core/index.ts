@@ -70,16 +70,16 @@ export abstract class ClassTestUI {
   private getSettings(obj: any): LifecycleSettings | TestSettings | SuiteSettings {
     let settings;
     if (ClassTestUI.slowSymbol in obj) {
-      (settings || (settings = {})).slow = obj[ClassTestUI.slowSymbol];
+      (settings || (settings = {}))['slow'] = obj[ClassTestUI.slowSymbol];
     }
     if (ClassTestUI.timeoutSymbol in obj) {
-      (settings || (settings = {})).timeout = obj[ClassTestUI.timeoutSymbol];
+      (settings || (settings = {}))['timeout'] = obj[ClassTestUI.timeoutSymbol];
     }
     if (ClassTestUI.retriesSymbol in obj) {
-      (settings || (settings = {})).retries = obj[ClassTestUI.retriesSymbol];
+      (settings || (settings = {}))['retries'] = obj[ClassTestUI.retriesSymbol];
     }
     if (ClassTestUI.executionSymbol in obj) {
-      (settings || (settings = {})).execution = obj[ClassTestUI.executionSymbol];
+      (settings || (settings = {}))['execution'] = obj[ClassTestUI.executionSymbol];
     }
     return settings;
   }
@@ -93,45 +93,44 @@ export abstract class ClassTestUI {
   private suiteCallbackFromClass<T extends TestInstance>(constructor: TestClass<T>): () => void {
     const theTestUI = this;
     return function() {
-      // Regsiter the static before method of the class to be called before-all tests.
-      if (constructor.before) {
-        const settings = theTestUI.getSettings(constructor.before);
-        if (isAsync(constructor.before)) {
-          theTestUI.runner.beforeAll("static before", wrap(function(done) {
-            constructor[theTestUI.context] = this;
-            return constructor.before(done);
-          }, constructor.before), settings);
+      let instance: T;
+      // Register the first "before each" callback to be one that will instantiate the class.
+      theTestUI.runner.beforeAll("setup instance", function setupInstance() {
+        constructor.prototype[theTestUI.context] = this;
+        instance = theTestUI.createInstance(constructor);
+      });
+
+      // Regsiter the before All method of the class to be called before-all tests.
+      const prototype = constructor.prototype;
+
+      if (prototype.beforeAll) {
+        // const settings = theTestUI.getSettings(instance.beforeAll);
+        const settings = theTestUI.getSettings(prototype.beforeAll);
+        if (isAsync(prototype.beforeAll)) {
+          theTestUI.runner.beforeAll("before All", wrap(function(done) {
+            instance[theTestUI.context] = this;
+            return prototype.beforeAll.call(instance, done);
+          }, prototype.beforeAll), settings);
         } else {
-          theTestUI.runner.beforeAll("static before", wrap(function() {
-            constructor[theTestUI.context] = this;
-            return constructor.before();
-          }, constructor.before), settings);
+          theTestUI.runner.beforeAll("before All", wrap(function() {
+            instance[theTestUI.context] = this;
+            return prototype.beforeAll.call(instance);
+          }, prototype.beforeAll), settings);
         }
       }
 
-      let instance;
-
-      // Register the first "before each" callback to be one that will instantiate the class.
-      theTestUI.runner.beforeEach("setup instance", function setupInstance() {
-        constructor.prototype[theTestUI.context] = this;
-        instance = theTestUI.createInstance(constructor);
-        constructor.prototype[theTestUI.context] = undefined;
-      });
-
-      const prototype = constructor.prototype;
-
       // Register the instance before method to be called before-each test method.
-      if (prototype.before) {
-        if (isAsync(prototype.before)) {
+      if (prototype.beforeEach) {
+        if (isAsync(prototype.beforeEach)) {
           theTestUI.runner.beforeEach("before", wrap(function(done: Function) {
             instance[theTestUI.context] = this;
-            return prototype.before.call(instance, done);
-          }, prototype.before), theTestUI.getSettings(prototype.before));
+            return prototype.beforeEach.call(instance, done);
+          }, prototype.beforeEach), theTestUI.getSettings(prototype.beforeEach));
         } else {
           theTestUI.runner.beforeEach("before", wrap(function() {
             instance[theTestUI.context] = this;
-            return prototype.before.call(instance);
-          }, prototype.before), theTestUI.getSettings(prototype.before));
+            return prototype.beforeEach.call(instance);
+          }, prototype.beforeEach), theTestUI.getSettings(prototype.beforeEach));
         }
       }
 
@@ -202,51 +201,48 @@ export abstract class ClassTestUI {
         declareTestMethod(value[0], value[1]);
       }
 
-      // Register a final after-each method to clear the instance reference.
-      function registerTeardownHook() {
-        theTestUI.runner.afterEach("teardown instance", function teardownInstance() {
-          instance = null;
-        });
-      }
-
-      // Jest will run the hooks in their reverse order
-      if (theTestUI.executeAfterHooksInReverseOrder) {
-        registerTeardownHook();
-      }
-
       // Register the instance after method to be called after-each test method.
-      if (prototype.after) {
-        if (isAsync(prototype.after)) {
+      if (prototype.afterEach) {
+        if (isAsync(prototype.afterEach)) {
           theTestUI.runner.afterEach("after", wrap(function(done) {
             instance[theTestUI.context] = this;
-            return prototype.after.call(instance, done);
-          }, prototype.after), theTestUI.getSettings(prototype.after));
+            return prototype.afterEach.call(instance, done);
+          }, prototype.afterEach), theTestUI.getSettings(prototype.afterEach));
         } else {
           theTestUI.runner.afterEach("after", wrap(function() {
             instance[theTestUI.context] = this;
-            return prototype.after.call(instance);
-          }, prototype.after), theTestUI.getSettings(prototype.after));
+            return prototype.afterEach.call(instance);
+          }, prototype.afterEach), theTestUI.getSettings(prototype.afterEach));
         }
+      }
+
+      // Register the static after method of the class to be called after-all tests.
+
+
+      if (prototype.afterAll) {
+        if (isAsync(prototype.afterAll)) {
+          theTestUI.runner.afterAll("after All", wrap(function(done) {
+            instance[theTestUI.context] = this;
+            return prototype.afterAll.call(instance, done);
+          }, prototype.afterAll), theTestUI.getSettings(prototype.afterAll));
+        } else {
+          theTestUI.runner.afterAll("after All", wrap(function() {
+            instance[theTestUI.context] = this;
+            return prototype.afterAll.call(instance);
+          }, prototype.afterAll), theTestUI.getSettings(prototype.afterAll));
+        }
+      }
+
+      // Register a final after-each method to clear the instance reference.
+      function registerTeardownHook() {
+        theTestUI.runner.afterAll("teardown instance", function teardownInstance() {
+          instance = null;
+        });
       }
 
       // Mocha will run the hooks in the order they have been added
       if (!theTestUI.executeAfterHooksInReverseOrder) {
         registerTeardownHook();
-      }
-
-      // Register the static after method of the class to be called after-all tests.
-      if (constructor.after) {
-        if (isAsync(constructor.after)) {
-          theTestUI.runner.afterAll("static after", wrap(function(done) {
-            constructor[theTestUI.context] = this;
-            return constructor.after(done);
-          }, constructor.after), theTestUI.getSettings(constructor.after));
-        } else {
-          theTestUI.runner.afterAll("static after", wrap(function() {
-            constructor[theTestUI.context] = this;
-            return constructor.after();
-          }, constructor.after), theTestUI.getSettings(constructor.after));
-        }
       }
     };
   }
@@ -558,27 +554,27 @@ export interface TestInstance {
   /**
    * An instance method, that if defined, is executed before every test method.
    */
-  before?(done?: Done): void | Promise<void>;
+  beforeEach?(done?: Done): void | Promise<void>;
 
   /**
    * An instance method, that if defined, is executed after every test method.
    */
-  after?(done?: Done): void | Promise<void>;
+  afterEach?(done?: Done): void | Promise<void>;
+
+  /**
+   * A instance method, that if defined, is executed once, before all test methods.
+   */
+  beforeAll?(done?: Done): void | Promise<void>;
+
+  /**
+   * A instance method, that if defined, is executed once, after all test methods.
+   */
+  afterAll?(done?: Done): void | Promise<void>;
 }
 
 export interface TestClass<T extends TestInstance> {
   new(...args: any[]): T;
   prototype: T;
-
-  /**
-   * A static method, that if defined, is executed once, before all test methods.
-   */
-  before?(done?: Done): void | Promise<void>;
-
-  /**
-   * A static method, that if defined, is executed once, after all test methods.
-   */
-  after?(done?: Done): void | Promise<void>;
 }
 
 export interface DependencyInjectionSystem {

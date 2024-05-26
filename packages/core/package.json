@@ -1,17 +1,18 @@
 {
-  "name": "@testdeck/core",
+  "name": "@nestjs-testdeck/core",
   "version": "0.3.3",
-  "description": "Core framework for decorator based object oriented testing",
+  "description": "Fork of @testdeck with beforeAll and afterAll as instance's methods",
   "keywords": [
     "test",
     "testing",
     "typescript",
+    "nest",
     "bdd",
     "tdd",
     "object oriented",
     "object-oriented"
   ],
-  "author": "Panayot Cankov",
+  "author": "ivankrtv",
   "contributors": [
     {
       "name": "silkentrance",

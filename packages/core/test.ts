@@ -147,15 +147,27 @@ describe("testdeck", function() {
                 type: "suite",
                 name: "SimpleSuite",
                 children: [{
-                    type: "test",
-                    name: "simpleTest",
+                    name: "setup instance",
+                    type: "beforeAll",
+                },{
+                        type: "test",
+                        name: "simpleTest",
+                }, {
+                    "name": "teardown instance",
+                    "type": "afterAll"
                 }]
             }, {
                 type: "suite",
                 name: "SimpleSuite2",
                 children: [{
+                    name: "setup instance",
+                    type: "beforeAll",
+                },{
                     type: "test",
                     name: "simpleTest2",
+                }, {
+                    "name": "teardown instance",
+                    "type": "afterAll"
                 }]
             }]);
         });
@@ -225,6 +237,11 @@ describe("testdeck", function() {
                     retries: 3
                 },
                 children: [{
+                    "name": "setup instance",
+                    "type": "beforeAll"
+                },
+
+                  {
                     type: "test",
                     name: "test1",
                     settings: {
@@ -241,6 +258,9 @@ describe("testdeck", function() {
                     settings: {
                         execution: "skip"
                     }
+                }, {
+                        "name": "teardown instance",
+                        "type": "afterAll"
                 }]
             }, {
                 type: "suite",
@@ -251,6 +271,9 @@ describe("testdeck", function() {
                     retries: 3
                 },
                 children: [{
+                    "name": "setup instance",
+                    "type": "beforeAll"
+                }, {
                     type: "test",
                     name: "test1",
                     settings: {
@@ -270,6 +293,9 @@ describe("testdeck", function() {
                     settings: {
                         retries: 2
                     }
+                }, {
+                    "name": "teardown instance",
+                    "type": "afterAll"
                 }]
             }, {
                 type: "suite",
@@ -278,6 +304,9 @@ describe("testdeck", function() {
                     execution: "only"
                 },
                 children: [{
+                    "name": "setup instance",
+                    "type": "beforeAll"
+                }, {
                     type: "test",
                     name: "test1"
                 }, {
@@ -304,6 +333,9 @@ describe("testdeck", function() {
                     settings: {
                         execution: "only"
                     }
+                }, {
+                    "name": "teardown instance",
+                    "type": "afterAll"
                 }]
             }, {
                 type: "suite",
@@ -311,14 +343,26 @@ describe("testdeck", function() {
                 settings: {
                     execution: "skip"
                 },
-                children: []
+                children: [{
+                    "name": "setup instance",
+                    "type": "beforeAll"
+                }, {
+                    "name": "teardown instance",
+                    "type": "afterAll"
+                }]
             }, {
                 type: "suite",
                 name: "PendingSuite",
                 settings: {
                     execution: "pending"
                 },
-                children: []
+                children: [{
+                    "name": "setup instance",
+                    "type": "beforeAll"
+                }, {
+                    "name": "teardown instance",
+                    "type": "afterAll"
+                }]
             }]);
         });
 
@@ -327,10 +371,10 @@ describe("testdeck", function() {
             ui.log = LoggingClassTestUI.Log.SetupTeardown;
 
             @ui.suite class SomeSuite {
-                public static before() {}
-                public before() {}
-                public after() {}
-                public static after() {}
+                public beforeAll() {}
+                public beforeEach() {}
+                public afterEach() {}
+                public afterAll() {}
             }
 
             assert.deepEqual(ui.root as any, [{
@@ -338,10 +382,10 @@ describe("testdeck", function() {
                 name: "SomeSuite",
                 children: [{
                     type: "beforeAll",
-                    name: "static before"
-                }, {
-                    type: "beforeEach",
                     name: "setup instance"
+                },{
+                    type: "beforeAll",
+                    name: "before All"
                 }, {
                     type: "beforeEach",
                     name: "before"
@@ -349,11 +393,11 @@ describe("testdeck", function() {
                     type: "afterEach",
                     name: "after"
                 }, {
-                    type: "afterEach",
-                    name: "teardown instance"
+                    type: "afterAll",
+                    name: "after All"
                 }, {
                     type: "afterAll",
-                    name: "static after"
+                    name: "teardown instance"
                 }]
             }]);
         });
@@ -363,28 +407,34 @@ describe("testdeck", function() {
             ui.log = LoggingClassTestUI.Log.Callback;
 
             @ui.suite class AllSync {
-                public static before() {}
-                public before() {}
+                public beforeAll() {}
+                public beforeEach() {}
                 @ui.test public test() {}
-                public after() {}
-                public static after() {}
+                public afterEach() {}
+                public afterAll() {}
             }
 
             @ui.suite class AllAsync {
-                public static before(done: Done) {}
-                public before(done: Done) {}
+                public beforeAll(done: Done) {}
+                public beforeEach(done: Done) {}
                 @ui.test public test(done: Done) {}
-                public after(done: Done) {}
-                public static after(done: Done) {}
+                public afterEach(done: Done) {}
+                public afterAll(done: Done) {}
             }
 
             assert.equal(ui.root.length, 2);
             const syncSuite = (ui.root[0] as LoggingClassTestUI.SuiteInfo);
             const asyncSuite = (ui.root[1] as LoggingClassTestUI.SuiteInfo);
-            assert.equal(syncSuite.children.length, 5);
-            assert.equal(asyncSuite.children.length, 5);
+            assert.equal(syncSuite.children.length, 7);
+            assert.equal(asyncSuite.children.length, 7);
             syncSuite.children.forEach((child) => assert.equal(child.callback.length, 0));
-            asyncSuite.children.forEach((child) => assert.equal(child.callback.length, 1));
+            asyncSuite.children.forEach((child, inx) => {
+                if (inx === 0 || inx === 6) {
+                    assert.equal(child.callback.length, 0);
+                    return;
+                }
+                assert.equal(child.callback.length, 1)
+            });
         });
 
         it("named suites and tests", function() {
@@ -399,8 +449,14 @@ describe("testdeck", function() {
                 type: "suite",
                 name: "My Special Named Suite",
                 children: [{
+                    "name": "setup instance",
+                    "type": "beforeAll",
+                }, {
                     type: "test",
                     name: "My Special Named Test"
+                }, {
+                    "name": "teardown instance",
+                    "type": "afterAll",
                 }]
             }]);
         });
@@ -426,18 +482,30 @@ describe("testdeck", function() {
                 type: "suite",
                 name: "Base1",
                 children: [{
+                    "name": "setup instance",
+                    "type": "beforeAll",
+                }, {
                     type: "test",
                     name: "test1"
+                }, {
+                    "name": "teardown instance",
+                    "type": "afterAll",
                 }]
             }, {
                 type: "suite",
                 name: "Derived2",
                 children: [{
+                    "name": "setup instance",
+                    "type": "beforeAll",
+                }, {
                     type: "test",
                     name: "test4"
                 }, {
                     type: "test",
                     name: "test2"
+                }, {
+                    "name": "teardown instance",
+                    "type": "afterAll",
                 }]
             }]);
         });
@@ -462,6 +530,9 @@ describe("testdeck", function() {
                 type: "suite",
                 name: "TestSuite",
                 children: [{
+                    "name": "setup instance",
+                    "type": "beforeAll",
+                },{
                     type: "suite",
                     name: "test1",
                     children: [{
@@ -499,6 +570,9 @@ describe("testdeck", function() {
                         type: "test",
                         name: "adding 4 and 5 must equal 9"
                     }]
+                }, {
+                    "name": "teardown instance",
+                    "type": "afterAll",
                 }]
             }]);
         });
@@ -509,7 +583,7 @@ describe("testdeck", function() {
 
             assert.doesNotThrow(function() {
                 @ui.suite class SomeSuite {
-                    public static after() {}
+                    public afterAll() {}
                 }
             });
         });
@@ -525,35 +599,35 @@ describe("testdeck", function() {
 
             @ui.suite class MyClass {
                 constructor() { cycle.push("Constructor"); }
-                public static before() { cycle.push("Before All"); }
-                public before() { cycle.push("Before Each"); }
+                public beforeAll() { cycle.push("Before All"); }
+                public beforeEach() { cycle.push("Before Each"); }
                 @ui.test public myTest() { cycle.push("Test"); }
-                public after() { cycle.push("After Each"); }
-                public static after() { cycle.push("After All"); }
+                public afterEach() { cycle.push("After Each"); }
+                public afterAll() { cycle.push("After All"); }
             }
 
             const suite = ui.root[0] as LoggingClassTestUI.SuiteInfo;
 
             const callbacks = suite.children.map((c) => c.callback);
 
-            assert.equal(callbacks[0].name, "before");
-            assert.equal(callbacks[0].toString(), 'before() { cycle.push("Before All"); }');
+            assert.equal(callbacks[0].name, "setupInstance");
 
-            assert.equal(callbacks[1].name, "setupInstance");
+            assert.equal(callbacks[1].name, "beforeAll");
+            assert.equal(callbacks[1].toString(), 'beforeAll() { cycle.push("Before All"); }');
 
-            assert.equal(callbacks[2].name, "before");
-            assert.equal(callbacks[2].toString(), 'before() { cycle.push("Before Each"); }');
+            assert.equal(callbacks[2].name, "beforeEach");
+            assert.equal(callbacks[2].toString(), 'beforeEach() { cycle.push("Before Each"); }');
 
             assert.equal(callbacks[3].name, "myTest");
             assert.equal(callbacks[3].toString(), 'myTest() { cycle.push("Test"); }');
 
-            assert.equal(callbacks[4].name, "after");
-            assert.equal(callbacks[4].toString(), 'after() { cycle.push("After Each"); }');
+            assert.equal(callbacks[4].name, "afterEach");
+            assert.equal(callbacks[4].toString(), 'afterEach() { cycle.push("After Each"); }');
 
-            assert.equal(callbacks[5].name, "teardownInstance");
+            assert.equal(callbacks[5].name, "afterAll");
+            assert.equal(callbacks[5].toString(), 'afterAll() { cycle.push("After All"); }');
 
-            assert.equal(callbacks[6].name, "after");
-            assert.equal(callbacks[6].toString(), 'after() { cycle.push("After All"); }');
+            assert.equal(callbacks[6].name, "teardownInstance");
 
             callbacks[0]();
             callbacks[1]();
@@ -564,8 +638,8 @@ describe("testdeck", function() {
             callbacks[6]();
 
             assert.deepEqual(cycle, [
-              "Before All",
-              "Constructor",
+                "Constructor",
+                "Before All",
               "Before Each",
               "Test",
               "After Each",
@@ -583,19 +657,19 @@ describe("testdeck", function() {
 
             function ping(): Promise<void> {
 
-                return Promise.resolve() as Promise<void>;
+                return Promise.resolve();
             }
 
             @ui.suite class MyClass {
                 constructor() {
                     cycle.push("Constructor");
                 }
-                public static async before() {
+                public async beforeAll() {
                     cycle.push("Before All");
                     await ping();
                     cycle.push("post Before All");
                 }
-                public async before() {
+                public async beforeEach() {
                     cycle.push("Before Each");
                     await ping();
                     cycle.push("post Before Each");
@@ -605,12 +679,12 @@ describe("testdeck", function() {
                     await ping();
                     cycle.push("post Test");
                 }
-                public async after() {
+                public async afterEach() {
                     cycle.push("After Each");
                     await ping();
                     cycle.push("post After Each");
                 }
-                public static async after() {
+                public async afterAll() {
                     cycle.push("After All");
                     await ping();
                     cycle.push("post After All");
@@ -620,10 +694,10 @@ describe("testdeck", function() {
             const suite = ui.root[0] as LoggingClassTestUI.SuiteInfo;
 
             let promise;
-            promise = suite.children[0].callback();
+            suite.children[0].callback();
+            promise = suite.children[1].callback();
             assert(promise instanceof Promise);
             await promise;
-            suite.children[1].callback();
             promise = suite.children[2].callback();
             assert(promise instanceof Promise);
             await promise;
@@ -633,15 +707,15 @@ describe("testdeck", function() {
             promise = suite.children[4].callback();
             assert(promise instanceof Promise);
             await promise;
-            suite.children[5].callback();
-            promise = suite.children[6].callback();
+            promise = suite.children[5].callback();
             assert(promise instanceof Promise);
             await promise;
+            suite.children[6].callback();
 
             assert.deepEqual(cycle, [
-              "Before All",
-              "post Before All",
-              "Constructor",
+                "Constructor",
+                "Before All",
+                "post Before All",
               "Before Each",
               "post Before Each",
               "Test",
@@ -662,21 +736,21 @@ describe("testdeck", function() {
             const cycle: string[] = [];
 
             function ping(): Promise<void> {
-                return new Promise<void>((done, err) => setTimeout(done, 0)) as Promise<void>;
+                return new Promise<void>((done, err) => setTimeout(done, 0));
             }
 
             @ui.suite class MyClass {
                 constructor() {
                     cycle.push("Constructor");
                 }
-                public static before(done) {
+                public beforeAll(done) {
                     cycle.push("Before All");
                     setTimeout(() => {
                         cycle.push("post Before All");
                         done();
                     }, 0);
                 }
-                public before(done) {
+                public beforeEach(done) {
                     cycle.push("Before Each");
                     setTimeout(() => {
                         cycle.push("post Before Each");
@@ -690,14 +764,14 @@ describe("testdeck", function() {
                         done();
                     }, 0);
                 }
-                public after(done) {
+                public afterEach(done) {
                     cycle.push("After Each");
                     setTimeout(() => {
                         cycle.push("post After Each");
                         done();
                     }, 0);
                 }
-                public static after(done) {
+                public afterAll(done) {
                     cycle.push("After All");
                     setTimeout(() => {
                         cycle.push("post After All");
@@ -708,18 +782,18 @@ describe("testdeck", function() {
 
             const suite = ui.root[0] as LoggingClassTestUI.SuiteInfo;
 
-            await new Promise((done) => suite.children[0].callback(done));
-            suite.children[1].callback();
+            suite.children[0].callback();
+            await new Promise((done) => suite.children[1].callback(done));
             await new Promise((done) => suite.children[2].callback(done));
             await new Promise((done) => suite.children[3].callback(done));
             await new Promise((done) => suite.children[4].callback(done));
-            suite.children[5].callback();
-            await new Promise((done) => suite.children[6].callback(done));
+            await new Promise((done) => suite.children[5].callback(done));
+            suite.children[6].callback();
 
             assert.deepEqual(cycle, [
-              "Before All",
-              "post Before All",
-              "Constructor",
+                "Constructor",
+                "Before All",
+                "post Before All",
               "Before Each",
               "post Before Each",
               "Test",
@@ -738,22 +812,22 @@ describe("testdeck", function() {
             ui.log = LoggingClassTestUI.Log.All;
 
             @ui.suite class Suite {
-                public static before() { assert.fail(); }
-                public before() { assert.fail(); }
+                public beforeAll() { assert.fail(); }
+                public beforeEach() { assert.fail(); }
                 @ui.test public test() { assert.fail(); }
-                public after() { assert.fail(); }
-                public static after() { assert.fail(); }
+                public afterEach() { assert.fail(); }
+                public afterAll() { assert.fail(); }
             }
 
             const suite = ui.root[0] as LoggingClassTestUI.SuiteInfo;
 
-            assert.throws(suite.children[0].callback);
-            suite.children[1].callback();
+            suite.children[0].callback();
+            assert.throws(suite.children[1].callback);
             assert.throws(suite.children[2].callback);
             assert.throws(suite.children[3].callback);
             assert.throws(suite.children[4].callback);
-            suite.children[5].callback();
-            assert.throws(suite.children[6].callback);
+            assert.throws(suite.children[5].callback);
+            suite.children[6].callback();
         });
 
         it("throwing async promise", async function() {
@@ -761,12 +835,12 @@ describe("testdeck", function() {
             ui.log = LoggingClassTestUI.Log.All;
 
             @ui.suite class Suite {
-                public static before(done) {
+                public beforeAll(done) {
                     setTimeout(function() {
                         done(new Error("Force fail."));
                     }, 0);
                 }
-                public before(done) {
+                public beforeEach(done) {
                     setTimeout(function() {
                         done(new Error("Force fail."));
                     }, 0);
@@ -776,12 +850,12 @@ describe("testdeck", function() {
                         done(new Error("Force fail."));
                     }, 0);
                 }
-                public after(done) {
+                public afterEach(done) {
                     setTimeout(function() {
                         done(new Error("Force fail."));
                     }, 0);
                 }
-                public static after(done) {
+                public afterAll(done) {
                     setTimeout(function() {
                         done(new Error("Force fail."));
                     }, 0);
@@ -790,10 +864,10 @@ describe("testdeck", function() {
 
             const suite = ui.root[0] as LoggingClassTestUI.SuiteInfo;
 
+            suite.children[0].callback();
             await assert.isRejected(new Promise<void>((resolve, reject) => {
-                suite.children[0].callback((err?) => err ? reject(err) : resolve());
+                suite.children[1].callback((err?) => err ? reject(err) : resolve());
             }) as PromiseLike<any>);
-            suite.children[1].callback();
             await assert.isRejected(new Promise<void>((resolve, reject) => {
                 suite.children[2].callback((err?) => err ? reject(err) : resolve());
             }) as PromiseLike<any>);
@@ -803,10 +877,10 @@ describe("testdeck", function() {
             await assert.isRejected(new Promise<void>((resolve, reject) => {
                 suite.children[4].callback((err?) => err ? reject(err) : resolve());
             }) as PromiseLike<any>);
-            suite.children[5].callback();
             await assert.isRejected(new Promise<void>((resolve, reject) => {
-                suite.children[6].callback((err?) => err ? reject(err) : resolve());
+                suite.children[5].callback((err?) => err ? reject(err) : resolve());
             }) as PromiseLike<any>);
+            suite.children[6].callback();
         });
 
         it("throwing async callback", async function() {
@@ -814,32 +888,32 @@ describe("testdeck", function() {
             ui.log = LoggingClassTestUI.Log.All;
 
             @ui.suite class Suite {
-                public static async before() {
+                public async beforeAll() {
                     assert.fail();
                 }
-                public async before() {
+                public async beforeEach() {
                     assert.fail();
                 }
                 @ui.test public async test(done) {
                     assert.fail();
                 }
-                public async after(done) {
+                public async afterEach(done) {
                     assert.fail();
                 }
-                public static async after(done) {
+                public async afterAll(done) {
                     assert.fail();
                 }
             }
 
             const suite = ui.root[0] as LoggingClassTestUI.SuiteInfo;
 
-            await assert.isRejected(suite.children[0].callback() as PromiseLike<void>);
-            suite.children[1].callback();
+            suite.children[0].callback();
+            await assert.isRejected(suite.children[1].callback() as PromiseLike<void>);
             await assert.isRejected(suite.children[2].callback() as PromiseLike<void>);
             await assert.isRejected(suite.children[3].callback() as PromiseLike<void>);
             await assert.isRejected(suite.children[4].callback() as PromiseLike<void>);
-            suite.children[5].callback();
-            await assert.isRejected(suite.children[6].callback() as PromiseLike<void>);
+            await assert.isRejected(suite.children[5].callback() as PromiseLike<void>);
+            suite.children[6].callback();
         });
 
         it("instantiate through dependency injection", function() {
@@ -938,20 +1012,20 @@ describe("testdeck", function() {
 
         it("is passed down to sync tests", function() {
 
-            let trace: string = "";
+            let trace = "";
 
             @ui.suite
             class MySyncTest {
-                static before() {
-                    trace += `static before(); context: ${this[ui.context]};\n`;
-                }
-
                 constructor() {
                     trace += `constructor(); context: ${this[ui.context]};\n`;
                 }
 
-                before(): void {
-                    trace += `before(); context: ${this[ui.context]};\n`;
+                beforeAll() {
+                    trace += `beforeAll(); context: ${this[ui.context]};\n`;
+                }
+
+                beforeEach(): void {
+                    trace += `beforeEach(); context: ${this[ui.context]};\n`;
                 }
 
                 @ui.test
@@ -964,23 +1038,23 @@ describe("testdeck", function() {
                     trace += `myTest2(); context: ${this[ui.context]};\n`;
                 }
 
-                after(): void {
-                    trace += `after(); context: ${this[ui.context]};\n`;
+                afterEach(): void {
+                    trace += `afterEach(); context: ${this[ui.context]};\n`;
                 }
 
-                static after() {
-                    trace += `static after(); context: ${this[ui.context]};\n`;
+                afterAll() {
+                    trace += `afterAll(); context: ${this[ui.context]};\n`;
                 }
             }
 
             const suite = ui.root[0];
             if (suite.type !== "suite") throw new AssertionError("Expected a class suite as first root element.");
 
-            const suiteBeforeAll = suite.children[0];
-            if (suiteBeforeAll.type !== "beforeAll" || suiteBeforeAll.name !== "static before") throw new AssertionError("Expected child 0 to be the 'static before'.");
+            const testInstanceInit = suite.children[0];
+            if (testInstanceInit.type !== "beforeAll" || testInstanceInit.name !== "setup instance") throw new AssertionError("Expected child 0 to be the 'setup instance'.");
 
-            const testInstanceInit = suite.children[1];
-            if (testInstanceInit.type !== "beforeEach" || testInstanceInit.name !== "setup instance") throw new AssertionError("Expected class 1 to be the 'setup instance' before each.");
+            const suiteBeforeAll = suite.children[1];
+            if (suiteBeforeAll.type !== "beforeAll" || suiteBeforeAll.name !== "before All") throw new AssertionError("Expected class 1 to be the 'before all' before all.");
 
             const testInstanceBeforeEach = suite.children[2];
             if (testInstanceBeforeEach.type !== "beforeEach" || testInstanceBeforeEach.name !== "before") throw new AssertionError("Expected child 2 to be the instance 'before' before-each callback.");
@@ -994,59 +1068,58 @@ describe("testdeck", function() {
             const testInstanceAfterEach = suite.children[5];
             if (testInstanceAfterEach.type !== "afterEach" || testInstanceAfterEach.name !== "after") throw new AssertionError("Expected child 5 to be the instance 'after' after-each callback.");
 
-            const testInstanceTeardown = suite.children[6];
-            if (testInstanceTeardown.type !== "afterEach" || testInstanceTeardown.name !== "teardown instance") throw new AssertionError("Expected class 6 to be the 'teardown instance' after each.");
+            const suiteAfterAll = suite.children[6];
+            if (suiteAfterAll.type !== "afterAll" || suiteAfterAll.name !== "after All") throw new AssertionError("Expected child 6 to be the 'after all'.");
 
-            const suiteAfterAll = suite.children[7];
-            if (suiteAfterAll.type !== "afterAll" || suiteAfterAll.name !== "static after") throw new AssertionError("Expected child 7 to be the 'static after'.");
+            const testInstanceTeardown = suite.children[7];
+            if (testInstanceTeardown.type !== "afterAll" || testInstanceTeardown.name !== "teardown instance") throw new AssertionError("Expected class 7 to be the 'teardown instance' after all.");
+
+            testInstanceInit.callback.call("testInstanceInit");
 
             suiteBeforeAll.callback.call("suiteBeforeAll Context");
 
-            testInstanceInit.callback.call("testInstanceInit 1 Context");
             testInstanceBeforeEach.callback.call("testBeforeEach 1 Context");
             testMethod1.callback.call("testMethod 1 Context");
             testInstanceAfterEach.callback.call("testAfterEach 1 Context");
-            testInstanceTeardown.callback.call("testInstanceTeardown 1 Context");
 
-            testInstanceInit.callback.call("testInstanceInit 2 Context");
             testInstanceBeforeEach.callback.call("testBeforeEach 2 Context");
             testMethod2.callback.call("testMethod 2 Context");
             testInstanceAfterEach.callback.call("testAfterEach 2 Context");
-            testInstanceTeardown.callback.call("testInstanceTeardown 2 Context");
 
             suiteAfterAll.callback.call("suiteAfterAll Context");
 
+            testInstanceTeardown.callback.call("testInstanceTeardown");
+
             const expected =
-                "static before(); context: suiteBeforeAll Context;\n" +
-                "constructor(); context: testInstanceInit 1 Context;\n" +
-                "before(); context: testBeforeEach 1 Context;\n" +
+              "constructor(); context: testInstanceInit;\n" +
+                "beforeAll(); context: suiteBeforeAll Context;\n" +
+                "beforeEach(); context: testBeforeEach 1 Context;\n" +
                 "myTest1(); context: testMethod 1 Context;\n" +
-                "after(); context: testAfterEach 1 Context;\n" +
-                "constructor(); context: testInstanceInit 2 Context;\n" +
-                "before(); context: testBeforeEach 2 Context;\n" +
+                "afterEach(); context: testAfterEach 1 Context;\n" +
+                "beforeEach(); context: testBeforeEach 2 Context;\n" +
                 "myTest2(); context: testMethod 2 Context;\n" +
-                "after(); context: testAfterEach 2 Context;\n" +
-                "static after(); context: suiteAfterAll Context;\n" +
+                "afterEach(); context: testAfterEach 2 Context;\n" +
+                "afterAll(); context: suiteAfterAll Context;\n" +
                 "";
 
             assert.equal(trace, expected);
         });
         it("is passed down to async tests", function() {
 
-            let trace: string = "";
+            let trace = "";
 
             @ui.suite
             class MySyncTest {
-                static before(done: Done) {
-                    trace += `static before(done); context: ${this[ui.context]};\n`;
+                beforeAll(done: Done) {
+                    trace += `beforeAll(done); context: ${this[ui.context]};\n`;
                 }
 
                 constructor() {
                     trace += `constructor(); context: ${this[ui.context]};\n`;
                 }
 
-                before(done: Done): void {
-                    trace += `before(done); context: ${this[ui.context]};\n`;
+                beforeEach(done: Done): void {
+                    trace += `beforeEach(done); context: ${this[ui.context]};\n`;
                 }
 
                 @ui.test
@@ -1059,23 +1132,23 @@ describe("testdeck", function() {
                     trace += `myTest2(done); context: ${this[ui.context]};\n`;
                 }
 
-                after(done: Done): void {
-                    trace += `after(done); context: ${this[ui.context]};\n`;
+                afterEach(done: Done): void {
+                    trace += `afterEach(done); context: ${this[ui.context]};\n`;
                 }
 
-                static after(done: Done) {
-                    trace += `static after(done); context: ${this[ui.context]};\n`;
+                afterAll(done: Done) {
+                    trace += `afterAll(done); context: ${this[ui.context]};\n`;
                 }
             }
 
             const suite = ui.root[0];
             if (suite.type !== "suite") throw new AssertionError("Expected a class suite as first root element.");
 
-            const suiteBeforeAll = suite.children[0];
-            if (suiteBeforeAll.type !== "beforeAll" || suiteBeforeAll.name !== "static before") throw new AssertionError("Expected child 0 to be the 'static before'.");
+            const testInstanceInit = suite.children[0];
+            if (testInstanceInit.type !== "beforeAll" || testInstanceInit.name !== "setup instance") throw new AssertionError("Expected child 0 to be the 'setup instance'.");
 
-            const testInstanceInit = suite.children[1];
-            if (testInstanceInit.type !== "beforeEach" || testInstanceInit.name !== "setup instance") throw new AssertionError("Expected class 1 to be the 'setup instance' before each.");
+            const suiteBeforeAll = suite.children[1];
+            if (suiteBeforeAll.type !== "beforeAll" || suiteBeforeAll.name !== "before All") throw new AssertionError("Expected class 1 to be the 'before All' before all.");
 
             const testInstanceBeforeEach = suite.children[2];
             if (testInstanceBeforeEach.type !== "beforeEach" || testInstanceBeforeEach.name !== "before") throw new AssertionError("Expected child 2 to be the instance 'before' before-each callback.");
@@ -1089,14 +1162,13 @@ describe("testdeck", function() {
             const testInstanceAfterEach = suite.children[5];
             if (testInstanceAfterEach.type !== "afterEach" || testInstanceAfterEach.name !== "after") throw new AssertionError("Expected child 5 to be the instance 'after' after-each callback.");
 
-            const testInstanceTeardown = suite.children[6];
-            if (testInstanceTeardown.type !== "afterEach" || testInstanceTeardown.name !== "teardown instance") throw new AssertionError("Expected class 6 to be the 'teardown instance' after each.");
+            const suiteAfterAll = suite.children[6];
+            if (suiteAfterAll.type !== "afterAll" || suiteAfterAll.name !== "after All") throw new AssertionError("Expected child 6 to be the 'after All'.");
 
-            const suiteAfterAll = suite.children[7];
-            if (suiteAfterAll.type !== "afterAll" || suiteAfterAll.name !== "static after") throw new AssertionError("Expected child 7 to be the 'static after'.");
+            const testInstanceTeardown = suite.children[7];
+            if (testInstanceTeardown.type !== "afterAll" || testInstanceTeardown.name !== "teardown instance") throw new AssertionError("Expected class 7 to be the 'teardown instance' after each.");
 
             const ignore = () => {};
-            suiteBeforeAll.callback.call("suiteBeforeAll Context", ignore);
 
             // TODO: Scramble async tests! Parallel running? Try:
             // testInstanceInit (for test 1)
@@ -1118,36 +1190,34 @@ describe("testdeck", function() {
             // TODO: In the async tests, spend some time awaiting something before calling "done", or try with `@test async myTest()...`
             // and check for the context after a while, make sure it is not swapped or cleared before the end of the test execution.
 
-            testInstanceInit.callback.call("testInstanceInit 1 Context", ignore);
+            testInstanceInit.callback.call("testInstanceInit", ignore);
+            suiteBeforeAll.callback.call("suiteBeforeAll Context", ignore);
             testInstanceBeforeEach.callback.call("testBeforeEach 1 Context", ignore);
             testMethod1.callback.call("testMethod 1 Context", ignore);
             testInstanceAfterEach.callback.call("testAfterEach 1 Context", ignore);
-            testInstanceTeardown.callback.call("testInstanceTeardown 1 Context", ignore);
 
-            testInstanceInit.callback.call("testInstanceInit 2 Context", ignore);
             testInstanceBeforeEach.callback.call("testBeforeEach 2 Context", ignore);
             testMethod2.callback.call("testMethod 2 Context", ignore);
             testInstanceAfterEach.callback.call("testAfterEach 2 Context", ignore);
-            testInstanceTeardown.callback.call("testInstanceTeardown 2 Context", ignore);
-
             suiteAfterAll.callback.call("suiteAfterAll Context", ignore);
 
+            testInstanceTeardown.callback.call("testInstanceTeardownContext", ignore);
+
             const expected =
-                "static before(done); context: suiteBeforeAll Context;\n" +
-                "constructor(); context: testInstanceInit 1 Context;\n" +
-                "before(done); context: testBeforeEach 1 Context;\n" +
-                "myTest1(done); context: testMethod 1 Context;\n" +
-                "after(done); context: testAfterEach 1 Context;\n" +
-                "constructor(); context: testInstanceInit 2 Context;\n" +
-                "before(done); context: testBeforeEach 2 Context;\n" +
-                "myTest2(done); context: testMethod 2 Context;\n" +
-                "after(done); context: testAfterEach 2 Context;\n" +
-                "static after(done); context: suiteAfterAll Context;\n" +
-                "";
+              "constructor(); context: testInstanceInit;\n" +
+              "beforeAll(done); context: suiteBeforeAll Context;\n" +
+              "beforeEach(done); context: testBeforeEach 1 Context;\n" +
+              "myTest1(done); context: testMethod 1 Context;\n" +
+              "afterEach(done); context: testAfterEach 1 Context;\n" +
+              "beforeEach(done); context: testBeforeEach 2 Context;\n" +
+              "myTest2(done); context: testMethod 2 Context;\n" +
+              "afterEach(done); context: testAfterEach 2 Context;\n" +
+              "afterAll(done); context: suiteAfterAll Context;\n" +
+              "";
 
             assert.equal(trace, expected);
         });
     });
 });
 
-declare var setTimeout;
+declare let setTimeout;
