@@ -40,7 +40,7 @@
     "lint-fix": "eslint --fix ."
   },
   "dependencies": {
-    "object-oriented-tests-core": "^0.4.2"
+    "object-oriented-tests-core": "^0.4.3"
   },
   "devDependencies": {
     "@types/chai": "latest",
