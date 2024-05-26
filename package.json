@@ -1,7 +1,7 @@
 {
-  "name": "testdeck",
+  "name": "object-oriented-tests",
   "private": true,
-  "version": "0.0.3",
+  "version": "0.4.0",
   "description": "TypeScript decorators based wrapper over various test framework interfaces",
   "author": "Panayot Cankov",
   "contributors": [
@@ -10,11 +10,10 @@
       "url": "https://github.com/silkentrance"
     }
   ],
-  "homepage": "https://testdeck.org/",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/testdeck/testdeck.git"
+    "url": "https://github.com/ivankrtv/object-oriented-tests"
   },
   "devDependencies": {
     "lerna": "latest",

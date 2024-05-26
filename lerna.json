@@ -1,6 +1,7 @@
 {
   "packages": [
-    "packages/*"
+    "packages/core",
+    "packages/jest"
   ],
   "command": {
     "bootstrap": {
@@ -9,5 +10,5 @@
       ]
     }
   },
-  "version": "0.3.3"
+  "version": "0.4.0"
 }

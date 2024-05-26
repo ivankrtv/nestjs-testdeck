@@ -1,7 +1,7 @@
 {
-  "name": "@object-oriented-tests/core",
-  "version": "1.0.0",
-  "description": "Fork of testdeck with beforeAll and afterAll as instance's methods",
+  "name": "@ivankrtv/object-oriented-tests-core",
+  "version": "0.4.0",
+  "description": "Fork of @testdeck/core with beforeAll and afterAll as instance's methods",
   "keywords": [
     "test",
     "testing",
@@ -11,8 +11,12 @@
     "object oriented",
     "object-oriented"
   ],
-  "author": "ivankrtv",
+  "author": "Panayot Cankov",
   "contributors": [
+    {
+      "name": "silkentrance",
+      "url": "https://github.com/silkentrance"
+    },
     {
       "name": "ivankrtv",
       "url": "https://github.com/ivankrtv"
@@ -21,7 +25,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ivankrtv/nestjs-testdeck.git"
+    "url": "https://github.com/ivankrtv/object-oriented-tests"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
